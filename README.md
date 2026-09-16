@@ -2,6 +2,8 @@
 
 Fine-tuned `Qwen/Qwen2.5-1.5B-Instruct` on a domain dataset I built covering EUDR (EU deforestation regulation), Digital Product Passports, carbon markets, chain of custody, dMRV, and CSRD/ESRS - the kind of regulatory/compliance knowledge general-purpose models get wrong because it isn't common web-training-data knowledge.
 
+Trained adapter on Hugging Face: [sajjan0001/qwen2.5-1.5b-trst01-compliance](https://huggingface.co/sajjan0001/qwen2.5-1.5b-trst01-compliance)
+
 ## What's here
 
 - `train.jsonl` - 447 examples in `messages` chat format, spanning EUDR, DPP/ESPR, carbon markets, CSRD/ESRS, chain of custody, ag traceability, CSDDD, EPR, plus some questions on RAG/fine-tuning methodology itself.
