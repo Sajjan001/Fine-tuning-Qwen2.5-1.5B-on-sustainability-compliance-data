@@ -1,0 +1,6 @@
+streamlit
+sentence-transformers
+transformers
+accelerate
+peft
+torch
