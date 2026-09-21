@@ -1,19 +1,16 @@
 """
-Minimal RAG demo over the domain corpus used for fine-tuning.
+Quick RAG test over my training corpus.
 
-Retrieves the most relevant Q&A passages from train.jsonl via embedding
-similarity, then feeds them as grounding context to the LLM so answers are
-sourced from retrievable text rather than relying solely on what the model
-memorized during fine-tuning. Fine-tuning teaches the model the domain's
-vocabulary and reasoning style; RAG keeps its answers current and citable.
+I wanted to see if grounding answers in the actual train.jsonl passages
+(pulled by embedding similarity) helps vs just trusting whatever the
+fine-tuned model memorized. Pulls the top-k closest Q&A pairs and stuffs
+them into the prompt as context.
 
-Usage:
     pip install -U sentence-transformers transformers accelerate peft torch
     python rag_demo.py
 
-Run this on a machine with a GPU (or adjust device="cpu" below) and, if you
-want to query the fine-tuned adapter instead of the base model, set
-MODEL_PATH to your saved LoRA output directory.
+Needs a GPU box, or change device="cpu" below. Point MODEL_PATH at my
+saved LoRA dir if I want to test the fine-tuned adapter instead of base.
 """
 
 import json
@@ -25,10 +22,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 CORPUS_FILE = "train.jsonl"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-MODEL_PATH = "Qwen/Qwen2.5-1.5B-Instruct"  # swap for your fine-tuned adapter/merged model dir
+MODEL_PATH = "Qwen/Qwen2.5-1.5B-Instruct"  # swap this for my fine-tuned adapter dir when testing that
 TOP_K = 3
 
-# every training example doubles as a retrievable Q&A pair
+# reusing the training examples themselves as the retrievable passages
 questions = []
 answers = []
 with open(CORPUS_FILE, encoding="utf-8") as f:

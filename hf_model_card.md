@@ -10,7 +10,7 @@ tags:
 
 # Qwen2.5-1.5B fine-tuned for sustainability/compliance domain
 
-QLoRA fine-tune of `Qwen/Qwen2.5-1.5B-Instruct` on EUDR (EU deforestation regulation), Digital Product Passports, carbon markets, chain of custody, dMRV, and CSRD/ESRS - regulatory/compliance knowledge that general-purpose models routinely get wrong because it isn't common web-training-data knowledge.
+I fine-tuned `Qwen/Qwen2.5-1.5B-Instruct` on EUDR (EU deforestation regulation), Digital Product Passports, carbon markets, chain of custody, dMRV, and CSRD/ESRS. This is regulatory/compliance knowledge that general-purpose models get wrong a lot, since it's not something that shows up much in typical web training data.
 
 Full writeup, dataset, and training notebook: [GitHub repo link here]
 
@@ -18,21 +18,21 @@ Full writeup, dataset, and training notebook: [GitHub repo link here]
 
 - Base model: Qwen/Qwen2.5-1.5B-Instruct
 - Method: QLoRA (4-bit NF4 quantization + LoRA adapters), rank 32, alpha 64
-- LoRA applied to both attention (`q/k/v/o_proj`) and MLP (`gate/up/down_proj`) layers - an earlier attention-only run plateaued around 63% token accuracy regardless of training length, since most factual knowledge in these models sits in the MLP layers
+- LoRA applied to both attention (`q/k/v/o_proj`) and MLP (`gate/up/down_proj`) layers. My first attempt only targeted attention and plateaued around 63% token accuracy no matter how long I trained it. Turns out most of the factual knowledge in these models lives in the MLP layers, so adding those fixed it.
 - Dataset: 447 hand-written examples covering EUDR, DPP/ESPR, carbon markets, CSRD/ESRS, chain of custody, ag traceability, CSDDD, EPR
-- Early stopping (`load_best_model_at_end`, patience 2) to avoid overfitting - training stopped itself at epoch 4, loss down from 2.6 to 0.92
+- Used early stopping (`load_best_model_at_end`, patience 2) to keep it from overfitting. Training stopped itself at epoch 4, with loss down from 2.6 to 0.92.
 
 ## Results
 
-On questions not present in the training data:
+I tested it on questions that weren't in the training data:
 
 **"What is EUDR and which companies does it apply to?"**
-Base model called it the "European Union's Data Protection Regulation" and described GDPR-style obligations - completely wrong. This model correctly identifies it as the EU Deforestation Regulation, the 2020 cutoff date, and the covered commodities (cattle, palm oil, cocoa, coffee, rubber, wood, leather, soy).
+The base model called it the "European Union's Data Protection Regulation" and described GDPR-style obligations - completely wrong. My model correctly identifies it as the EU Deforestation Regulation, gets the 2020 cutoff date right, and lists the covered commodities (cattle, palm oil, cocoa, coffee, rubber, wood, leather, soy).
 
 **"What is the difference between mass balance and identity preserved chain of custody?"**
-Base model invented a nonexistent ISO standard. This model correctly explains that mass balance allows mixing of certified and non-certified material without invalidating certification, while identity preserved keeps material physically separated with dedicated processing lines.
+The base model invented a nonexistent ISO standard. My model correctly explains that mass balance allows mixing of certified and non-certified material without invalidating certification, while identity preserved keeps material physically separated with dedicated processing lines.
 
-Both answers still have minor inaccuracies rather than being word-perfect - full transcripts and honest analysis of what's still off are in the GitHub repo's `eval_results.md`.
+Neither answer is word-perfect - there are still minor inaccuracies. I've got full transcripts and an honest breakdown of what's still off in the GitHub repo's `eval_results.md`.
 
 ## Usage
 
@@ -52,4 +52,4 @@ print(tokenizer.decode(out[0][inputs.shape[1]:], skip_special_tokens=True))
 
 ## Limitations
 
-1.5B parameters and ~450 examples is a starting point, not production scale. Hasn't been tested on messy real-world input (OCR'd documents, multiple languages). Next step would be pairing this with retrieval (RAG) so answers are grounded in cited source text rather than relying purely on fine-tuned recall.
+1.5B parameters and ~450 examples is a starting point, not production scale. I haven't tested it on messy real-world input like OCR'd documents or multiple languages. Next thing I want to try is pairing this with retrieval (RAG) so answers are grounded in cited source text instead of relying purely on what the fine-tune memorized.
